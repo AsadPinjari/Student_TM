@@ -257,6 +257,49 @@
   }
   .quick-add button.submit:hover{background:var(--coral);}
 
+  /* search */
+  .search-box{
+    position:relative;
+    margin-bottom:16px;
+  }
+  .search-box svg{
+    position:absolute;
+    left:11px;
+    top:50%;
+    transform:translateY(-50%);
+    width:14px;height:14px;
+    color:var(--ink-faint);
+    pointer-events:none;
+  }
+  .search-box input{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--paper-card);
+    border-radius:6px;
+    padding:9px 32px 9px 32px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    color:var(--ink);
+  }
+  .search-box input:focus{outline:none; border-color:var(--ink-faint);}
+  .search-box input::placeholder{color:var(--ink-faint);}
+  .search-box .clear-search{
+    position:absolute;
+    right:8px;
+    top:50%;
+    transform:translateY(-50%);
+    border:none;
+    background:none;
+    color:var(--ink-faint);
+    cursor:pointer;
+    font-size:14px;
+    padding:2px 5px;
+    display:none;
+    line-height:1;
+  }
+  .search-box .clear-search:hover{color:var(--coral);}
+  .search-box.has-value .clear-search{display:block;}
+
   /* view controls */
   .view-row{
     display:flex;
@@ -463,6 +506,12 @@
         <button class="submit" id="addTaskBtn">Add task</button>
       </div>
 
+      <div class="search-box" id="searchBox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search tasks by keyword…">
+        <button class="clear-search" id="clearSearch" title="Clear search">✕</button>
+      </div>
+
       <div class="view-row">
         <h2 id="viewTitle">All tasks</h2>
         <button class="sort-toggle" id="sortToggle">sort: due date ↑</button>
@@ -496,6 +545,7 @@
   let activeSubject = 'all';
   let sortAsc = true;
   let idCounter = 100;
+  let searchQuery = '';
 
   const tabList = document.getElementById('tabList');
   const cardList = document.getElementById('cardList');
@@ -544,16 +594,25 @@
 
   function renderCards(){
     let list = tasks.filter(t => activeSubject==='all' || t.subjectId===activeSubject);
+    const q = searchQuery.trim().toLowerCase();
+    if(q){
+      list = list.filter(t => t.title.toLowerCase().includes(q));
+    }
     list = list.slice().sort((a,b)=>{
       if(a.done!==b.done) return a.done ? 1 : -1;
       const cmp = a.due.localeCompare(b.due);
       return sortAsc ? cmp : -cmp;
     });
 
-    viewTitle.textContent = activeSubject==='all' ? 'All tasks' : subjectById(activeSubject)?.name || 'Tasks';
+    const baseTitle = activeSubject==='all' ? 'All tasks' : subjectById(activeSubject)?.name || 'Tasks';
+    viewTitle.textContent = q ? `${baseTitle} — “${searchQuery.trim()}”` : baseTitle;
 
     if(list.length===0){
-      cardList.innerHTML = `<div class="empty-state"><div class="mark">Nothing here</div><div class="sub">Add a task above to fill this page.</div></div>`;
+      if(q){
+        cardList.innerHTML = `<div class="empty-state"><div class="mark">No matches</div><div class="sub">Nothing found for “${escapeHtml(searchQuery.trim())}”. Try a different keyword.</div></div>`;
+      } else {
+        cardList.innerHTML = `<div class="empty-state"><div class="mark">Nothing here</div><div class="sub">Add a task above to fill this page.</div></div>`;
+      }
       return;
     }
 
@@ -658,6 +717,23 @@
 
   // sort toggle
   sortToggle.onclick = ()=>{ sortAsc = !sortAsc; render(); };
+
+  // search
+  const searchBox = document.getElementById('searchBox');
+  const searchInput = document.getElementById('searchInput');
+  const clearSearch = document.getElementById('clearSearch');
+  searchInput.addEventListener('input', ()=>{
+    searchQuery = searchInput.value;
+    searchBox.classList.toggle('has-value', searchQuery.length>0);
+    renderCards();
+  });
+  clearSearch.onclick = ()=>{
+    searchQuery = '';
+    searchInput.value = '';
+    searchBox.classList.remove('has-value');
+    searchInput.focus();
+    renderCards();
+  };
 
   renderSubjectSelect();
   render();
