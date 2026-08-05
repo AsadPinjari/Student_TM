@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coursework — Task Binder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EEF1F6;
+    --paper-card: #FBFCFE;
+    --ink: #1D2B4F;
+    --ink-light: #5B6785;
+    --ink-faint: #97A2BE;
+    --coral: #E85C4A;
+    --line: #D7DEEA;
+    --ring: #C3CEE0;
+    --amber: #E8A33D;
+    --sage: #5E9080;
+    --plum: #82598E;
+    --teal: #3E8E9A;
+    --navy: #445A9E;
+    --rose: #C6577A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 42px;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+  }
+  .app{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 28px 80px 28px;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    padding-bottom:18px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .title-block h1{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:700;
+    font-size:clamp(32px,5vw,46px);
+    margin:0;
+    letter-spacing:-0.5px;
+    line-height:1;
+  }
+  .title-block .sub{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--ink-light);
+    margin-top:6px;
+  }
+  .status-strip{
+    display:flex;
+    gap:22px;
+    align-items:flex-end;
+  }
+  .stat{
+    text-align:right;
+  }
+  .stat .num{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:30px;
+    line-height:1;
+    color:var(--coral);
+  }
+  .stat .num.done{color:var(--sage);}
+  .stat .lbl{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-light);
+    margin-top:4px;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:190px 1fr;
+    gap:0;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:0 1px 3px rgba(29,43,79,0.06), 0 8px 24px rgba(29,43,79,0.05);
+    overflow:hidden;
+    position:relative;
+  }
+  /* binder ring holes along the seam */
+  .rings{
+    position:absolute;
+    left:190px;
+    top:0;
+    bottom:0;
+    width:0;
+    z-index:3;
+  }
+  .rings::before{
+    content:'';
+    position:absolute;
+    left:-1px;
+    top:0;
+    bottom:0;
+    width:2px;
+    background:repeating-linear-gradient(to bottom, transparent 0 10px, var(--line) 10px 12px);
+  }
+
+  /* ---------- Sidebar (subject tabs) ---------- */
+  .sidebar{
+    background:#E4E9F2;
+    border-right:1px solid var(--line);
+    padding:20px 0 20px 0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .sidebar-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-light);
+    padding:0 16px 10px 20px;
+  }
+  .tab-btn{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:11px 14px 11px 20px;
+    margin-right:14px;
+    border:none;
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink-light);
+    text-align:left;
+    cursor:pointer;
+    border-radius:0 20px 20px 0;
+    transition:background .15s, color .15s, margin-right .15s;
+  }
+  .tab-btn .dot{
+    width:9px;height:9px;border-radius:50%;
+    flex-shrink:0;
+  }
+  .tab-btn .count{
+    margin-left:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--ink-faint);
+  }
+  .tab-btn:hover{background:#DAE1EE; color:var(--ink);}
+  .tab-btn.active{
+    background:var(--paper-card);
+    color:var(--ink);
+    margin-right:0;
+    box-shadow:inset 3px 0 0 var(--tab-color, var(--ink));
+  }
+  .tab-btn.active .count{color:var(--ink-light);}
+  .add-subject{
+    margin-top:10px;
+    padding:9px 14px 9px 20px;
+    display:flex;
+    gap:6px;
+  }
+  .add-subject input{
+    flex:1;
+    min-width:0;
+    border:1px dashed var(--ink-faint);
+    background:transparent;
+    border-radius:4px;
+    padding:6px 8px;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    color:var(--ink);
+  }
+  .add-subject input:focus{outline:none; border-color:var(--ink);}
+  .add-subject button{
+    border:none;
+    background:var(--ink);
+    color:var(--paper-card);
+    width:26px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:15px;
+    line-height:1;
+  }
+
+  /* ---------- Main panel ---------- */
+  main{
+    padding:26px 30px 30px 34px;
+    min-width:0;
+  }
+
+  /* quick add */
+  .quick-add{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    background:#F4F6FA;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px 14px;
+    margin-bottom:22px;
+  }
+  .quick-add input[type=text]{
+    flex:1 1 220px;
+    border:none;
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    padding:6px 2px;
+  }
+  .quick-add input[type=text]:focus{outline:none;}
+  .quick-add input[type=text]::placeholder{color:var(--ink-faint);}
+  .quick-add select, .quick-add input[type=date]{
+    border:1px solid var(--line);
+    background:var(--paper-card);
+    border-radius:4px;
+    padding:7px 8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--ink-light);
+  }
+  .quick-add select:focus, .quick-add input[type=date]:focus{outline:none; border-color:var(--ink);}
+  .quick-add button.submit{
+    border:none;
+    background:var(--ink);
+    color:#fff;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:8px 16px;
+    border-radius:4px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .quick-add button.submit:hover{background:var(--coral);}
+
+  /* view controls */
+  .view-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .view-row h2{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:19px;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .sort-toggle{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-light);
+    background:none;
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:5px 12px;
+    cursor:pointer;
+  }
+  .sort-toggle:hover{border-color:var(--ink-faint); color:var(--ink);}
+
+  /* task cards */
+  .cards{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .card{
+    position:relative;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-left:5px solid var(--tab-color, var(--ink));
+    border-radius:3px;
+    padding:13px 16px 13px 14px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    /* torn edge feel via subtle notch top */
+  }
+  .card.overdue{border-left-color:var(--coral); background:#FFF6F5;}
+  .card.done{opacity:0.55;}
+  .checkhole{
+    flex-shrink:0;
+    width:22px;height:22px;
+    border-radius:50%;
+    border:2px solid var(--ink-faint);
+    background:var(--paper);
+    cursor:pointer;
+    margin-top:2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:border-color .15s, background .15s;
+  }
+  .checkhole:hover{border-color:var(--ink);}
+  .card.done .checkhole{
+    background:var(--sage);
+    border-color:var(--sage);
+  }
+  .checkhole svg{width:12px;height:12px;opacity:0;transition:opacity .15s;}
+  .card.done .checkhole svg{opacity:1;}
+  .card-body{flex:1; min-width:0;}
+  .card-top{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .card-title{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  .card.done .card-title{text-decoration:line-through; color:var(--ink-light);}
+  .card-subject{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-light);
+    background:#E9EDF5;
+    padding:2px 7px;
+    border-radius:10px;
+  }
+  .card-meta{
+    margin-top:4px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-light);
+  }
+  .card-meta .due.overdue-text{color:var(--coral); font-weight:500;}
+  .priority-flag{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+  }
+  .priority-flag .p-dot{width:7px;height:7px;border-radius:50%;}
+  .p-high{background:var(--coral);}
+  .p-med{background:var(--amber);}
+  .p-low{background:var(--sage);}
+  .del-btn{
+    flex-shrink:0;
+    border:none;
+    background:none;
+    color:var(--ink-faint);
+    cursor:pointer;
+    font-size:16px;
+    padding:2px 4px;
+    border-radius:4px;
+    line-height:1;
+  }
+  .del-btn:hover{color:var(--coral); background:#FBEAE7;}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-light);
+  }
+  .empty-state .mark{
+    font-family:'Fraunces',serif;
+    font-size:22px;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .empty-state .sub{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+  }
+
+  @media (max-width:720px){
+    .layout{grid-template-columns:1fr;}
+    .rings{display:none;}
+    .sidebar{
+      flex-direction:row;
+      overflow-x:auto;
+      border-right:none;
+      border-bottom:1px solid var(--line);
+      padding:14px 10px;
+      gap:8px;
+    }
+    .sidebar-label{display:none;}
+    .tab-btn{
+      border-radius:20px;
+      margin-right:0;
+      flex-shrink:0;
+      padding:8px 14px;
+    }
+    .tab-btn.active{box-shadow:none; background:var(--ink); color:#fff;}
+    .tab-btn.active .count{color:#fff;}
+    .add-subject{flex-shrink:0;}
+    main{padding:20px;}
+    .status-strip{gap:14px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="title-block">
+      <h1>Coursework</h1>
+      <div class="sub">// your assignments, sorted by what's due</div>
+    </div>
+    <div class="status-strip">
+      <div class="stat"><div class="num" id="statOpen">0</div><div class="lbl">Open</div></div>
+      <div class="stat"><div class="num done" id="statDone">0</div><div class="lbl">Done</div></div>
+      <div class="stat"><div class="num" id="statOverdue">0</div><div class="lbl">Overdue</div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="rings"></div>
+
+    <div class="sidebar">
+      <div class="sidebar-label">Subjects</div>
+      <div id="tabList"></div>
+      <div class="add-subject">
+        <input type="text" id="newSubjectInput" placeholder="New subject" maxlength="18">
+        <button id="addSubjectBtn" title="Add subject">+</button>
+      </div>
+    </div>
+
+    <main>
+      <div class="quick-add">
+        <input type="text" id="taskTitle" placeholder="Add a task — e.g. Read Chapter 4">
+        <select id="taskSubject"></select>
+        <select id="taskPriority">
+          <option value="low">Low priority</option>
+          <option value="med" selected>Med priority</option>
+          <option value="high">High priority</option>
+        </select>
+        <input type="date" id="taskDue">
+        <button class="submit" id="addTaskBtn">Add task</button>
+      </div>
+
+      <div class="view-row">
+        <h2 id="viewTitle">All tasks</h2>
+        <button class="sort-toggle" id="sortToggle">sort: due date ↑</button>
+      </div>
+
+      <div class="cards" id="cardList"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+  const palette = ['#E8A33D','#5E9080','#82598E','#3E8E9A','#445A9E','#C6577A','#B0793D','#4E8E5A'];
+
+  let subjects = [
+    {id:'s1', name:'Math', color: palette[0]},
+    {id:'s2', name:'History', color: palette[1]},
+    {id:'s3', name:'Chemistry', color: palette[2]},
+  ];
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  function isoOffset(days){ const d=new Date(today); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+
+  let tasks = [
+    {id:'t1', title:'Problem set 6 — derivatives', subjectId:'s1', due:isoOffset(1), priority:'high', done:false},
+    {id:'t2', title:'Read Ch. 12, take notes', subjectId:'s2', due:isoOffset(3), priority:'med', done:false},
+    {id:'t3', title:'Lab report: titration', subjectId:'s3', due:isoOffset(-1), priority:'high', done:false},
+    {id:'t4', title:'Review quiz corrections', subjectId:'s1', due:isoOffset(5), priority:'low', done:true},
+  ];
+
+  let activeSubject = 'all';
+  let sortAsc = true;
+  let idCounter = 100;
+
+  const tabList = document.getElementById('tabList');
+  const cardList = document.getElementById('cardList');
+  const taskSubjectSelect = document.getElementById('taskSubject');
+  const viewTitle = document.getElementById('viewTitle');
+  const sortToggle = document.getElementById('sortToggle');
+
+  function subjectById(id){ return subjects.find(s=>s.id===id); }
+
+  function fmtDate(iso){
+    const d = new Date(iso+'T00:00:00');
+    return d.toLocaleDateString('en-US',{month:'short', day:'numeric'});
+  }
+  function dueLabel(iso){
+    const d = new Date(iso+'T00:00:00');
+    const diff = Math.round((d-today)/86400000);
+    if(diff===0) return 'today';
+    if(diff===1) return 'tomorrow';
+    if(diff===-1) return '1 day overdue';
+    if(diff<0) return Math.abs(diff)+' days overdue';
+    return 'in '+diff+' days';
+  }
+
+  function renderTabs(){
+    tabList.innerHTML = '';
+    const allBtn = makeTab({id:'all', name:'All tasks', color:'#1D2B4F'}, tasks.length);
+    tabList.appendChild(allBtn);
+    subjects.forEach(s=>{
+      const count = tasks.filter(t=>t.subjectId===s.id && !t.done).length;
+      tabList.appendChild(makeTab(s, count));
+    });
+  }
+
+  function makeTab(s, count){
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (activeSubject===s.id ? ' active' : '');
+    btn.style.setProperty('--tab-color', s.color);
+    btn.innerHTML = `<span class="dot" style="background:${s.color}"></span><span>${escapeHtml(s.name)}</span><span class="count">${count}</span>`;
+    btn.onclick = ()=>{ activeSubject = s.id; render(); };
+    return btn;
+  }
+
+  function renderSubjectSelect(){
+    taskSubjectSelect.innerHTML = subjects.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  }
+
+  function renderCards(){
+    let list = tasks.filter(t => activeSubject==='all' || t.subjectId===activeSubject);
+    list = list.slice().sort((a,b)=>{
+      if(a.done!==b.done) return a.done ? 1 : -1;
+      const cmp = a.due.localeCompare(b.due);
+      return sortAsc ? cmp : -cmp;
+    });
+
+    viewTitle.textContent = activeSubject==='all' ? 'All tasks' : subjectById(activeSubject)?.name || 'Tasks';
+
+    if(list.length===0){
+      cardList.innerHTML = `<div class="empty-state"><div class="mark">Nothing here</div><div class="sub">Add a task above to fill this page.</div></div>`;
+      return;
+    }
+
+    cardList.innerHTML = '';
+    list.forEach(t=>{
+      const subj = subjectById(t.subjectId);
+      const overdue = !t.done && t.due < isoOffset(0);
+      const card = document.createElement('div');
+      card.className = 'card' + (overdue?' overdue':'') + (t.done?' done':'');
+      card.style.setProperty('--tab-color', subj ? subj.color : '#1D2B4F');
+      card.innerHTML = `
+        <div class="checkhole" data-id="${t.id}">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M1.5 6.5L4.5 9.5L10.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-top">
+            <span class="card-title">${escapeHtml(t.title)}</span>
+            <span class="card-subject">${subj?escapeHtml(subj.name):'—'}</span>
+          </div>
+          <div class="card-meta">
+            <span class="due${overdue?' overdue-text':''}">${fmtDate(t.due)} · ${dueLabel(t.due)}</span>
+            <span class="priority-flag"><span class="p-dot p-${t.priority}"></span>${t.priority==='high'?'High':t.priority==='med'?'Med':'Low'}</span>
+          </div>
+        </div>
+        <button class="del-btn" data-id="${t.id}" title="Delete task">✕</button>
+      `;
+      cardList.appendChild(card);
+    });
+
+    cardList.querySelectorAll('.checkhole').forEach(el=>{
+      el.onclick = ()=>{ toggleDone(el.dataset.id); };
+    });
+    cardList.querySelectorAll('.del-btn').forEach(el=>{
+      el.onclick = ()=>{ deleteTask(el.dataset.id); };
+    });
+  }
+
+  function renderStats(){
+    const open = tasks.filter(t=>!t.done).length;
+    const done = tasks.filter(t=>t.done).length;
+    const overdue = tasks.filter(t=>!t.done && t.due < isoOffset(0)).length;
+    document.getElementById('statOpen').textContent = open;
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statOverdue').textContent = overdue;
+  }
+
+  function render(){
+    renderTabs();
+    renderCards();
+    renderStats();
+    sortToggle.textContent = 'sort: due date ' + (sortAsc ? '↑' : '↓');
+  }
+
+  function toggleDone(id){
+    const t = tasks.find(x=>x.id===id);
+    if(t){ t.done = !t.done; render(); }
+  }
+  function deleteTask(id){
+    tasks = tasks.filter(x=>x.id!==id);
+    render();
+  }
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // add task
+  document.getElementById('addTaskBtn').onclick = ()=>{
+    const titleInput = document.getElementById('taskTitle');
+    const title = titleInput.value.trim();
+    if(!title) { titleInput.focus(); return; }
+    const subjectId = taskSubjectSelect.value || (subjects[0] && subjects[0].id);
+    const priority = document.getElementById('taskPriority').value;
+    const dueInput = document.getElementById('taskDue');
+    const due = dueInput.value || isoOffset(0);
+    if(!subjectId){ alert('Add a subject first.'); return; }
+    tasks.push({id:'t'+(idCounter++), title, subjectId, due, priority, done:false});
+    titleInput.value = '';
+    dueInput.value = '';
+    render();
+    titleInput.focus();
+  };
+  document.getElementById('taskTitle').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addTaskBtn').click();
+  });
+
+  // add subject
+  document.getElementById('addSubjectBtn').onclick = ()=>{
+    const input = document.getElementById('newSubjectInput');
+    const name = input.value.trim();
+    if(!name) { input.focus(); return; }
+    const color = palette[subjects.length % palette.length];
+    const id = 's'+(idCounter++);
+    subjects.push({id, name, color});
+    input.value = '';
+    renderSubjectSelect();
+    render();
+  };
+  document.getElementById('newSubjectInput').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addSubjectBtn').click();
+  });
+
+  // sort toggle
+  sortToggle.onclick = ()=>{ sortAsc = !sortAsc; render(); };
+
+  renderSubjectSelect();
+  render();
+})();
+</script>
+</body>
+</html>
