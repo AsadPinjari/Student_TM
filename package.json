@@ -1,0 +1,21 @@
+{
+  "name": "student_tm",
+  "version": "1.0.0",
+  "description": "On NEW 1 branch",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js",
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AsadPinjari/Student_TM.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AsadPinjari/Student_TM/issues"
+  },
+  "homepage": "https://github.com/AsadPinjari/Student_TM#readme"
+}
