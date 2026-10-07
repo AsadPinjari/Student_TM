@@ -4,8 +4,9 @@
   "description": "On NEW 1 branch",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js",
-    "build": "node build.js"
+  "start": "node server.js",
+  "test": "node test.js",
+  "build": "node build.js"
   },
   "repository": {
     "type": "git",
@@ -17,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/AsadPinjari/Student_TM/issues"
   },
-  "homepage": "https://github.com/AsadPinjari/Student_TM#readme"
+  "homepage": "https://github.com/AsadPinjari/Student_TM#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "prom-client": "^15.1.3"
+  }
 }

@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: task-manager-container
-          image: stu-task-mng
+          image: task-manager:2.0
           imagePullPolicy: Never
 
           ports:
-            - containerPort: 80
+            - containerPort: 3000
